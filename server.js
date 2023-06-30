@@ -54,8 +54,9 @@ app.post('/api/apply-job', upload.single('resume'), (req, res) => {
 
     // Send email using nodemailer
     const mailOptions = {
-      from: 'parthibaneee7548@gmail.com', // Replace with your email address
-      to: 'parthiban@objectways.com', // Replace with the recipient email address
+      from: 'careers-objectways', // Replace with your email address
+      to: 'balamuruganveerappan@objectways.com', // Replace with the recipient email address
+      cc: 'parthiban@objectways.com',
       subject: 'Job Application',
       text: `A new job application has been submitted.\n\nName: ${name}\nAddress: ${address}\nExperience: ${experience}\nPrevious Company: ${previousCompany}\nNotice Period: ${noticePeriod}\nLast CTC: ${lastCTC}\nExpected CTC: ${expectedCTC}`,
       attachments: []
@@ -88,7 +89,8 @@ app.get('*', function (req, res) {
 })
 
 // Start the server
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+const port = process.env.PORT || 5000
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
