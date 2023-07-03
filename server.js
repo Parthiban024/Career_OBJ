@@ -22,7 +22,7 @@ const upload = multer({ storage });
 // API endpoint for job application form submission
 app.post('/api/apply-job', upload.single('resume'), (req, res) => {
   try {
-    const { name, address, experience, previousCompany, noticePeriod, lastCTC, expectedCTC } = req.body;
+    const { name, address, experience, previousCompany, noticePeriod, lastCTC, expectedCTC, phoneNO } = req.body;
 
     // Handle form submission logic here
     // You can access the uploaded resume file using req.file
@@ -36,6 +36,7 @@ app.post('/api/apply-job', upload.single('resume'), (req, res) => {
     console.log('Notice Period:', noticePeriod);
     console.log('Last CTC:', lastCTC);
     console.log('Expected CTC:', expectedCTC);
+    console.log('Phone No:', phoneNO);
 
     if (req.file) {
       console.log('Uploaded Resume:');
@@ -54,11 +55,11 @@ app.post('/api/apply-job', upload.single('resume'), (req, res) => {
 
     // Send email using nodemailer
     const mailOptions = {
-      from: 'careers-objectways', // Replace with your email address
+      from: 'New Application', // Replace with your email address
       to: 'balamuruganveerappan@objectways.com', // Replace with the recipient email address
       cc: 'parthiban@objectways.com',
       subject: 'Job Application',
-      text: `A new job application has been submitted.\n\nName: ${name}\nAddress: ${address}\nExperience: ${experience}\nPrevious Company: ${previousCompany}\nNotice Period: ${noticePeriod}\nLast CTC: ${lastCTC}\nExpected CTC: ${expectedCTC}`,
+      text: `A new job application has been submitted.\n\nName: ${name}\nAddress: ${address}\nExperience: ${experience}\nPrevious Company: ${previousCompany}\nNotice Period: ${noticePeriod}\nLast CTC: ${lastCTC}\nExpected CTC: ${expectedCTC}\nPhone No: ${phoneNO}`,
       attachments: []
     };
 
