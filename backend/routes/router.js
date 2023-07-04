@@ -1,48 +1,12 @@
 const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const router = express.Router();
 const nodemailer = require("nodemailer");
-const jwt = require('jsonwebtoken');
-const router = require('./backend/routes/router');
-const path = require('path')
-const Review = require('./backend/models/review');
-const ReviewTwo = require('./backend/models/timechamp');
-const ReviewThree = require('./backend/models/hrreview');
-require('dotenv').config(); // load environment variables from .env file
-
-
-
-
-let reviews = [];
-let timechamp = [];
-let hrreview = [];
-
-
-const app = express();
-app.use(cors());
-// setup body-parser middleware to parse request bodies
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function () {
-  console.log('MongoDB connected');
-});
-
-// Routes
-app.use('/api', router);
-
-
+const Review = require('../models/review');
+const ReviewTwo = require('../models/timechamp');
+const ReviewThree = require('../models/hrreview');
+ 
 // Add a new review
-app.post('/api/reviews', (req, res) => {
-
+router.post('/reviews', (req, res) => {
   const { employeeName, employeeId, emailId, systemNo, systemType, systemTypetwo, unitNo, floorNo, teamName, teamManager, priority, issueDate, description } = req.body;
 
   const newReview = new Review({
@@ -81,17 +45,16 @@ employeeName, employeeId, emailId, systemNo, systemType, systemTypetwo, unitNo, 
       res.redirect('/');
       console.log('email sent' + info.response)
     }
-
-  })
+})
 
 });
 
 // Add a new review
-app.post('/api/timechamp', (req, res) => {
-  const { employeeIdTwo, systemNoTwo, systemTypeTwo, emailID, unitNoTwo, floorNoTwo, teamNameTwo, priorityTwo, issueDateTwo, descriptionTwo, } = req.body;
+router.post('/api/timechamp', (req, res) => {
+  const { employeeIdTwo, systemNoTwo, systemTypeTwo, unitNoTwo, floorNoTwo, emailID, teamNameTwo, priorityTwo, issueDateTwo, descriptionTwo, } = req.body;
 
   const newReviewTwo = new ReviewTwo({
-   employeeIdTwo, systemNoTwo, systemTypeTwo, emailID, unitNoTwo, floorNoTwo, teamNameTwo, priorityTwo, issueDateTwo, descriptionTwo
+   employeeIdTwo, systemNoTwo, systemTypeTwo, unitNoTwo, floorNoTwo, emailID, teamNameTwo, priorityTwo, issueDateTwo, descriptionTwo
   });
 
   newReviewTwo.save()
@@ -115,7 +78,7 @@ app.post('/api/timechamp', (req, res) => {
     from: 'New-Ticket <loganathanvenkatesh@objectways.com>',
     to: 'hrm@objectways.com',
     cc: 'loganathanvenkatesh@objectways.com',
-    subject: `New Ticket from the team ${req.body.systemTypeTwo}`,
+    subject: `New Ticket from ${req.body.systemTypeTwo}`,
     text: `Team Name: ${req.body.systemTypeTwo}\nTeam Manager: ${req.body.systemNoTwo}\nMessage: ${req.body.descriptionTwo}`, // plain text body
     html: `<p>Team Name: ${req.body.systemTypeTwo}</p><p>Team Manager: ${req.body.systemNoTwo}</p><p>Issue: ${req.body.employeeIdTwo}</p><p>Message: ${req.body.descriptionTwo}</p>` // html body
   }
@@ -132,13 +95,11 @@ app.post('/api/timechamp', (req, res) => {
 });
 
 // Add a new review
-app.post('/api/hrreview', (req, res) => {
-
-
-  const { employeeNameThree, employeeIdThree, systemNoThree, systemTypeThree, floorNoThree, unitNoThree, teamNameThree, teamManagerThree, priorityThree, issueDateThree, descriptionThree } = req.body;
+router.post('/api/hrreview', (req, res) => {
+  const { employeeNameThree, employeeIdThree, systemNoThree, systemTypeThree, floorNoThree, teamNameThree, teamManagerThree, priorityThree, issueDateThree, descriptionThree } = req.body;
 
   const newReviewThree = new ReviewThree({
-    employeeNameThree, employeeIdThree, systemNoThree, systemTypeThree, floorNoThree, unitNoThree, teamNameThree, teamManagerThree, priorityThree, issueDateThree, descriptionThree
+    employeeNameThree, employeeIdThree, systemNoThree, systemTypeThree, floorNoThree, teamNameThree, teamManagerThree, priorityThree, issueDateThree, descriptionThree
   });
 
   newReviewThree.save()
@@ -163,9 +124,9 @@ app.post('/api/hrreview', (req, res) => {
     from: 'New-Ticket <hrm@objectways.com>',
     to: 'hrm@objectways.com',
     cc: 'parthiban@objectways.com',
-    subject: `New Ticket from the employee ID ${req.body.employeeNameThree}`,
-    text: `Name: ${req.body.systemNoThree}\nEmail: ${req.body.employeeIdThree}\nMessage: ${req.body.descriptionThree}`, // plain text body
-    html: `<p>Name: ${req.body.systemNoThree}</p><p>Email: ${req.body.employeeIdThree}</p><p>Issue: ${req.body.floorNoThree}</p><p>Message: ${req.body.descriptionThree}</p>` // html body
+    subject: `New Ticket from ${req.body.employeeNameThree}`,
+    text: `Name: ${req.body.employeeNameThree}\nEmail: ${req.body.employeeIdThree}\nMessage: ${req.body.descriptionThree}`, // plain text body
+    html: `<p>Name: ${req.body.employeeNameThree}</p><p>Email: ${req.body.employeeIdThree}</p><p>Issue: ${req.body.floorNoThree}</p><p>Message: ${req.body.descriptionThree}</p>` // html body
   }
   transpoter.sendMail(mailOptions, function (error, info) {
     if (err) {
@@ -180,8 +141,10 @@ app.post('/api/hrreview', (req, res) => {
 });
 
 
+
+
 // Get all reviews
-app.get('/api/reviews', async (req, res) => {
+router.get('/reviews', async (req, res) => {
   try {
     const reviews = await Review.find({});
     res.send(reviews);
@@ -192,11 +155,10 @@ app.get('/api/reviews', async (req, res) => {
 });
 
 // Get all reviews
-app.get('/api/timechamp', async (req, res) => {
+router.get('/timechamp', async (req, res) => {
   try {
     const reviewstwo = await ReviewTwo.find({});
     res.send(reviewstwo);
-    res.send(timechamp);
   } catch (err) {
     console.log(err);
     res.status(500).send('Error getting reviews');
@@ -204,11 +166,10 @@ app.get('/api/timechamp', async (req, res) => {
 });
 
 // Get all reviews
-app.get('/api/hrreview', async (req, res) => {
+router.get('/hrreview', async (req, res) => {
   try {
     const reviewsthree = await ReviewThree.find({});
     res.send(reviewsthree);
-    res.send(hrreview);
   } catch (err) {
     console.log(err);
     res.status(500).send('Error getting reviews');
@@ -216,7 +177,7 @@ app.get('/api/hrreview', async (req, res) => {
 });
 
 // Delete a review
-app.delete('/api/reviews/:id', async (req, res) => {
+router.delete('/reviews/:id', async (req, res) => {
   try {
     const review = await Review.findByIdAndDelete(req.params.id);
     if (!review) {
@@ -231,7 +192,7 @@ app.delete('/api/reviews/:id', async (req, res) => {
 });
 
 // Delete a review
-app.delete('/api/timechamp/:id', async (req, res) => {
+router.delete('/timechamp/:id', async (req, res) => {
   try {
     const reviewtwo = await ReviewTwo.findByIdAndDelete(req.params.id);
     if (!reviewtwo) {
@@ -246,7 +207,7 @@ app.delete('/api/timechamp/:id', async (req, res) => {
 });
 
 // Delete a review
-app.delete('/api/hrreview/:id', async (req, res) => {
+router.delete('/hrreview/:id', async (req, res) => {
   try {
     const reviewthree = await ReviewThree.findByIdAndDelete(req.params.id);
     if (!reviewthree) {
@@ -263,7 +224,7 @@ app.delete('/api/hrreview/:id', async (req, res) => {
 
 // IT Admin Dashboard
 // define API routes
-app.post('/api/accept', (req, res) => {
+router.post('/accept', (req, res) => {
   // update the ticket status to "accepted"
   const ticket = req.body;
   ticket.status = 'accepted';
@@ -274,7 +235,7 @@ app.post('/api/accept', (req, res) => {
   res.status(200).send('Ticket accepted successfully');
 });
 
-app.post('/api/resolve', (req, res) => {
+router.post('/resolve', (req, res) => {
   // update the ticket status to "resolved"
   const ticket = req.body;
   ticket.status = 'resolved';
@@ -285,14 +246,14 @@ app.post('/api/resolve', (req, res) => {
   res.status(200).send('Ticket resolved successfully');
 });
 
-app.post('/api/send-email', (req, res) => {
+router.post('/send-email', (req, res) => {
   // send email to user using nodemailer
   const emailData = req.body;
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: 'parthibaneee7548@gmail.com',
-
+      
       pass: 'xnzrszhaawvpkcov'
     }
   });
@@ -318,7 +279,7 @@ app.post('/api/send-email', (req, res) => {
 
 // Hr dashboard
 // define API routes
-app.post('/api/accepthr', (req, res) => {
+router.post('/accepthr', (req, res) => {
   // update the ticket status to "accepted"
   const ticket = req.body;
   ticket.status = 'accepted';
@@ -329,7 +290,7 @@ app.post('/api/accepthr', (req, res) => {
   res.status(200).send('Ticket accepted successfully');
 });
 
-app.post('/api/resolvehr', (req, res) => {
+router.post('/resolvehr', (req, res) => {
   // update the ticket status to "resolved"
   const ticket = req.body;
   ticket.status = 'resolved';
@@ -340,14 +301,14 @@ app.post('/api/resolvehr', (req, res) => {
   res.status(200).send('Ticket resolved successfully');
 });
 
-app.post('/api/send-emailhr', (req, res) => {
+router.post('/send-emailhr', (req, res) => {
   // send email to user using nodemailer
   const emailData = req.body;
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: 'parthibaneee7548@gmail.com',
-
+      
       pass: 'xnzrszhaawvpkcov'
     }
   });
@@ -372,7 +333,7 @@ app.post('/api/send-emailhr', (req, res) => {
 
 // Timechamp Dashboard
 // define API routes
-app.post('/api/accepttc', (req, res) => {
+router.post('/accepttc', (req, res) => {
   // update the ticket status to "accepted"
   const ticket = req.body;
   ticket.status = 'accepted';
@@ -383,7 +344,7 @@ app.post('/api/accepttc', (req, res) => {
   res.status(200).send('Ticket accepted successfully');
 });
 
-app.post('/api/resolvetc', (req, res) => {
+router.post('/resolvetc', (req, res) => {
   // update the ticket status to "resolved"
   const ticket = req.body;
   ticket.status = 'resolved';
@@ -394,14 +355,14 @@ app.post('/api/resolvetc', (req, res) => {
   res.status(200).send('Ticket resolved successfully');
 });
 
-app.post('/api/send-emailtc', (req, res) => {
+router.post('/send-emailtc', (req, res) => {
   // send email to user using nodemailer
   const emailData = req.body;
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: 'parthibaneee7548@gmail.com',
-
+      
       pass: 'xnzrszhaawvpkcov'
     }
   });
@@ -424,18 +385,4 @@ app.post('/api/send-emailtc', (req, res) => {
   });
 });
 
-
-// static files
-app.use(express.static(path.join(__dirname, './client/build')))
-
-app.get('*', function (req, res) {
-  res.sendFile(path.join(__dirname, './client/build/index.html'))
-})
-
-
-// port
-const port = process.env.PORT || 8080
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+module.exports = router;
